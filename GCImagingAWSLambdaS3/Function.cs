@@ -18,8 +18,8 @@ namespace GCImagingAWSLambdaS3
 {
     public class Function
     {
-        static string SourceBucket = "raw-bucket";
-        static string DestBucket = "processed-bucket";
+        static string SourceBucket = "gc-imaging-source-bucket";
+        static string DestBucket = "gc-imaging-target-bucket";
         IAmazonS3 S3Client { get; set; }
 
         /// <summary>
