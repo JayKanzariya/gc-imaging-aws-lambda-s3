@@ -1,5 +1,7 @@
 # Create an Imaging service over AWS S3 with GrapeCity Documents for Imaging
 
+![Create your Imaging service on AWS with GcImaging](/Blog_ Create your Imaging service on AWS with GcImaging.png)
+
 GrapeCity Document for Imaging (or GcImaging) is a high-speed, feature-rich API for .NET Standard 2.0 under GrapeCity Documents providing support for image manipulation. You can create, load, modify, crop, resize, convert, and draw images in your .NET Standard 2.0 apps.  GrapeCity Documents for Imaging assemblies are built for .NET Standard 2.0 and can be used with any target that supports it. 
 
 ## Designing the service
