@@ -18,8 +18,8 @@ namespace GCImagingAWSLambdaS3
 {
     public class Function
     {
-        static string SourceBucket = "gc-imaging-source-bucket";
-        static string DestBucket = "gc-imaging-target-bucket";
+        static readonly string SourceBucket = "gc-imaging-source-bucket";
+        static readonly string DestBucket = "gc-imaging-target-bucket";
         IAmazonS3 S3Client { get; set; }
 
         /// <summary>
@@ -61,7 +61,6 @@ namespace GCImagingAWSLambdaS3
                 var rs = await this.S3Client.GetObjectMetadataAsync(
                     s3Event.Bucket.Name,
                     s3Event.Object.Key);
-                
                 if (rs.Headers.ContentType.StartsWith("image/"))
                 {
                     using (GetObjectResponse response = await S3Client.GetObjectAsync(
