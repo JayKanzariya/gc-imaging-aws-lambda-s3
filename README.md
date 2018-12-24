@@ -30,7 +30,7 @@ We are designing a service which will perform manipulations on the image. Follow
 
 Amazon S3 can publish events (for example, when an object is created in a bucket) to AWS Lambda and invoke your Lambda function by passing the event data as a parameter. This integration enables you to write Lambda functions that process Amazon S3 events. In Amazon S3, you add a bucket notification configuration that identifies the type of event that you want Amazon S3 to publish and the Lambda function that you want to invoke. This notification system can then be used to manipulate image which is uploaded to a bucket. We can create a Lambda function that this bucket would invoke when an image is uploaded into it. Then this Lambda function can read the image and upload a manipulated image into another bucket. A high-level design of our imaging service would look like the following
 
-[!High-level-design](https://github.com/iwannabebot/gc-imaging-aws-lambda-s3/raw/master/GCImagingAWSLambdaS3/GCImagingS3Lambda%20(6)%20(1).png)
+![High-level-design](https://github.com/iwannabebot/gc-imaging-aws-lambda-s3/raw/master/GCImagingAWSLambdaS3/GCImagingS3Lambda%20(6)%20(1).png)
 
 The flow of this diagram can be understood in the following fashion:
 1.	User uploads an image into a specific S3 bucket (say, Source bucket)
