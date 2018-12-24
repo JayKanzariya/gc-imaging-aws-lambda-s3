@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Drawing;
 using System.Collections.Generic;
@@ -26,7 +26,11 @@ namespace GCImagingAWSLambdaS3
                     origBmp.DpiY);
                 bmp.ApplyEffect(GrayscaleEffect.Get(GrayscaleStandard.BT601));
             }
-            
+            return GetBase64(bmp);
+        }
+
+        private static string GetBase64(GcBitmap bmp)
+        {
             using (Image image = Image.FromGcBitmap(bmp, true))
             {
                 using (MemoryStream m = new MemoryStream())
