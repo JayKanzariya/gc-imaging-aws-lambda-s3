@@ -8,7 +8,7 @@ GrapeCity Document for Imaging (or GcImaging) is a high-speed, feature-rich API 
 Earlier we discussed how GrapeCity Documents can be used to generate documents (PDF and Excel) over AWS Lambda. In this article we will be discussing how we can leverage this compatibility of GcImaging and Lambda function to create an imaging service over AWS S3 events.
 
 ### GcImaging and Image operations
-GcImaging is distributed as standalone NuGet packages, available directly from NuGet.org. GcImaging does not depend on any specific hardware or any third-party libraries. Usage of GcImaging revolves around GcBitmap class, which can be created directly (new GcBitmap()). The functionalities of this class are:
+GcImaging is distributed as standalone NuGet packages, [available directly from NuGet.org](https://www.nuget.org/packages/GrapeCity.Documents.Imaging). GcImaging does not depend on any specific hardware or any third-party libraries. Usage of GcImaging revolves around GcBitmap class, which can be created directly (new GcBitmap()). The functionalities of this class are:
 
 1.	Creating a new image
 2.	Loading an existing Image
