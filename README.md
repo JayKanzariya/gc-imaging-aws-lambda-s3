@@ -26,6 +26,8 @@ We are designing a service which will perform manipulations on the image. Follow
 |Resize|```var __gcBitmap = new GcBitmap();```<br>```_gcBitmap.Load(imageStream);```<br>```_gcBitmap.Resize(```<br>```     100,```<br>```     100,```<br>```      InterpolationMode.NearestNeighbor);```|InterpolationMode enum specifies the sampling or filtering mode to use when scaling an image. Its values are:<br>•	NearestNeighbor<br>•	Linear<br>•	Cubic<br>•	Downscale|
 |Watermark|```var __gcBitmap = new GcBitmap();```<br>```_gcBitmap.Load(imageStream);```<br>```using (var g = bmp.CreateGraphics(Color.White))```<br>```{```<br>```     g.DrawString(```<br>```         "Watermark",```<br>```         new TextFormat```<br>```         {```<br>```             FontSize = 96,```<br>```             ForeColor = Color.FromArgb(128, Color.Yellow),```<br>```             Font = FontCollection.SystemFonts.DefaultFont```<br>```         },```<br>```         new RectangleF(0, 0, gcBitmap.Width, gcBitmap.Height),```<br>```         TextAlignment.Center,```<br>```         ParagraphAlignment.Center,```<br>```         false```<br>```     );```<br>```}```|We use GcBitmapGraphics class to draw watermark on an image. An instance of GcBitmapGraphics can be created on a GcBitmap using the method GcBitmap.CreateGraphics(). GcBitmapGraphics derives from GcGraphics and provides drawing, filling, clipping and other normal graphics operations, like GcPdfGraphics. Text can be drawn on a GcBitmapGraphics using the same methods as in GcPdf - e.g. DrawTextLayout.|
 
+[For more imaging operations refer this](https://demos.componentone.com/gcdocs/gcimaging/).
+
 ### Amazon S3
 
 Amazon S3 can publish events (for example, when an object is created in a bucket) to AWS Lambda and invoke your Lambda function by passing the event data as a parameter. This integration enables you to write Lambda functions that process Amazon S3 events. In Amazon S3, you add a bucket notification configuration that identifies the type of event that you want Amazon S3 to publish and the Lambda function that you want to invoke. This notification system can then be used to manipulate image which is uploaded to a bucket. We can create a Lambda function that this bucket would invoke when an image is uploaded into it. Then this Lambda function can read the image and upload a manipulated image into another bucket. A high-level design of our imaging service would look like the following
@@ -41,7 +43,7 @@ The flow of this diagram can be understood in the following fashion:
 ### Pre-requisite:
 
 1.	Visual Studio
-2.	Download and Install AWS Toolkit for Visual Studio.
+2.	Download and Install [AWS Toolkit for Visual Studio](https://aws.amazon.com/visualstudio/).
 
 ### Setup AWS Services:
 1.	Two S3 bucket (“Source Bucket” and “Target Bucket”)
@@ -60,6 +62,10 @@ The AWSLambdaExecute policy has the permissions that the function needs to manag
 Next, we will create a Lambda function which will contain the code to fetch, modify and upload the image to an S3 bucket.
 
 ### Lambda Function
+
+<aside class="warning">
+You can skip this step by cloning this repository.
+</aside>
 
 1.	Open Visual Studio and create new project ‘GCImagingAWSLambdaS3’ by selecting C# > AWS Lambda > AWS Lambda Project (.NET Core)
 2.	Select ‘Simple S3 Function’ from ‘Select Blueprint’ dialog.
@@ -249,7 +255,7 @@ Permissions for your Lambda function – Regardless of what invokes a Lambda fun
 Permissions for Amazon S3 to invoke your Lambda function – Amazon S3 cannot invoke your Lambda function without your permission. You grant this permission via the permissions policy associated with the Lambda function.
 
 The remaining configuration is to setup S3 to publish events to the function we have written. Follow these steps:
-1.	Open Amazon S3 Console
+1.	[Open Amazon S3 Console](https://console.aws.amazon.com/s3/home)
 2.	Select your bucket ‘gc-imaging-source-bucket’.
 3.	Select Properties > Advanced settings > Events
 4.	Add a notification with following settings
