@@ -40,7 +40,7 @@ namespace GCImagingAWSLambdaS3
         {
             this.S3Client = s3Client;
         }
-        
+
         /// <summary>
         /// This method is called for every Lambda invocation. This method takes in an S3 event object and can be used 
         /// to respond to S3 notifications.
@@ -51,7 +51,7 @@ namespace GCImagingAWSLambdaS3
         public async Task<string> FunctionHandler(S3Event evnt, ILambdaContext context)
         {
             var s3Event = evnt.Records?[0].S3;
-            if(s3Event == null)
+            if (s3Event == null)
             {
                 return null;
             }
@@ -77,8 +77,8 @@ namespace GCImagingAWSLambdaS3
                                     var bytesRead = default(int);
                                     while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
                                         memstream.Write(buffer, 0, bytesRead);
-
-                                    var transformedImage = GcImagingOperations.GetConvertedImage(memstream);
+                                    
+                                    var transformedImage = GcImagingOperations.GetConvertedImage(memstream.ToArray());
                                     PutObjectRequest putRequest = new PutObjectRequest()
                                     {
                                         BucketName = DestBucket,
@@ -94,7 +94,7 @@ namespace GCImagingAWSLambdaS3
                 }
                 return rs.Headers.ContentType;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 context.Logger.LogLine($"Error getting object {s3Event.Object.Key} from bucket {s3Event.Bucket.Name}. Make sure they exist and your bucket is in the same region as this function.");
                 context.Logger.LogLine(e.Message);
