@@ -9,9 +9,13 @@ Earlier we discussed how GrapeCity Documents can be used to generate documents (
 
 ### GcImaging and Image operations
 GcImaging is distributed as standalone NuGet packages, [available directly from NuGet.org](https://www.nuget.org/packages/GrapeCity.Documents.Imaging).
-
+ -	NuGet Package Manager
 ```bash
 Install-Package GrapeCity.Documents.Imaging
+```
+ -	Dotnet CLI
+```bash
+dotnet add package GrapeCity.Documents.Imaging
 ```
 
 GcImaging does not depend on any specific hardware or any third-party libraries. Usage of GcImaging revolves around GcBitmap class, which can be created directly (new GcBitmap()). The functionalities of this class are:
