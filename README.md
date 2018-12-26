@@ -256,7 +256,7 @@ The remaining configuration is to setup S3 to publish events to the function we 
     1.	Name: GrayScaleImage
     2.	Events: All object create events
     3.	Send To: Lambda Function
-    4.	Lambda: “GCImagingAWSLambdaS3::GCImagingAWSLambdaS3.Function::FunctionHandler” (Lambda Function ARN)
+    4.	Lambda: “GCImagingAWSLambdaS3::GCImagingAWSLambdaS3.Function::FunctionHandler” (Lambda Function ARN, [see your project's configuration file](https://github.com/iwannabebot/gc-imaging-aws-lambda-s3/blob/master/GCImagingAWSLambdaS3/aws-lambda-tools-defaults.json#L18))
 5.	Publish the settings.
 
 Now whenever you upload any image in gc-imaging-source-bucket bucket you will have its grayscale version uploaded into gc-imaging-target-bucket bucket. 
