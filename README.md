@@ -45,18 +45,16 @@ The flow of this diagram can be understood in the following fashion:
 
 ### Setup AWS Services:
 1.	Two S3 bucket (“Source Bucket” and “Target Bucket”)
-a.	Open AWS Management Console
-b.	Select All Services > Storage > S3 
-c.	Click on Create bucket
-i.	Name: ‘gc-imaging-source-bucket’
-d.	Click on Create bucket
-i.	Name: ‘gc-imaging-target-bucket’
+    1.	Open AWS Management Console
+    2.	Select All Services > Storage > S3 
+    3.	Click on Create bucket > Name: ‘gc-imaging-source-bucket’
+    4.	Click on Create bucket > Name: ‘gc-imaging-target-bucket’
 2.	An Execution role which gives permission to access AWS resources
-a.	Open AWS Management Console
-b.	Open IAM Console
-c.	Click on ‘Create Role’ button
-d.	Select ‘AWS Lambda’ and press next to select permission
-e.	Select ‘arn:aws:iam::aws:policy/AWSLambdaExecute’ policy and press ‘Create Role’
+    1.	Open AWS Management Console
+    2.	Open IAM Console
+    3.	Click on ‘Create Role’ button
+    5.	Select ‘AWS Lambda’ and press next to select permission
+    6.	Select ‘arn:aws:iam::aws:policy/AWSLambdaExecute’ policy and press ‘Create Role’
 The AWSLambdaExecute policy has the permissions that the function needs to manage objects in Amazon S3
 
 Next, we will create a Lambda function which will contain the code to fetch, modify and upload the image to an S3 bucket.
@@ -255,10 +253,10 @@ The remaining configuration is to setup S3 to publish events to the function we 
 2.	Select your bucket ‘gc-imaging-source-bucket’.
 3.	Select Properties > Advanced settings > Events
 4.	Add a notification with following settings
-a.	Name: GrayScaleImage
-b.	Events: All object create events
-c.	Send To: Lambda Function
-d.	Lambda: “GCImagingAWSLambdaS3::GCImagingAWSLambdaS3.Function::FunctionHandler” (Lambda Function ARN)
+    1.	Name: GrayScaleImage
+    2.	Events: All object create events
+    3.	Send To: Lambda Function
+    4.	Lambda: “GCImagingAWSLambdaS3::GCImagingAWSLambdaS3.Function::FunctionHandler” (Lambda Function ARN)
 5.	Publish the settings.
 
 Now whenever you upload any image in gc-imaging-source-bucket bucket you will have its grayscale version uploaded into gc-imaging-target-bucket bucket. 
