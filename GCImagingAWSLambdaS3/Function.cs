@@ -78,7 +78,7 @@ namespace GCImagingAWSLambdaS3
                                     while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
                                         memstream.Write(buffer, 0, bytesRead);
 
-                                    var transformedImage = GcImagingOperations.GetGrayScale(memstream);
+                                    var transformedImage = GcImagingOperations.GetConvertedImage(memstream);
                                     PutObjectRequest putRequest = new PutObjectRequest()
                                     {
                                         BucketName = DestBucket,
