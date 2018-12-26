@@ -9,14 +9,23 @@ namespace GCImagingAWSLambdaS3
 {
     public class GcImagingOperations
     {
-        public static string GetConvertedImage(Stream stream)
+        public static string GetConvertedImage(byte[] stream)
         {
             using (var bmp = new GcBitmap())
             {
                 bmp.Load(stream);
                 // Add watermark
+                var newImg = new GcBitmap();
+                newImg.Load(stream);
                 using (var g = bmp.CreateGraphics(Color.White))
                 {
+                    g.DrawImage(
+                        Image.FromGcBitmap(newImg, true),
+                        new RectangleF(0, 0, bmp.Width, bmp.Height),
+                        null,
+                        ImageAlign.Default
+                        );
+
                     g.DrawString("This is a watermarked string", new TextFormat
                     {
                         FontSize = 96,
@@ -33,17 +42,14 @@ namespace GCImagingAWSLambdaS3
                 return GetBase64(resizedImage);
             }
         }
-        
+
         #region helper
         private static string GetBase64(GcBitmap bmp)
         {
-            using (Image image = Image.FromGcBitmap(bmp, true))
+            using (MemoryStream m = new MemoryStream())
             {
-                using (MemoryStream m = new MemoryStream())
-                {
-                    bmp.SaveAsPng(m);
-                    return Convert.ToBase64String(m.ToArray());
-                }
+                bmp.SaveAsPng(m);
+                return Convert.ToBase64String(m.ToArray());
             }
         }
         #endregion
