@@ -26,7 +26,7 @@ namespace GCImagingAWSLambdaS3
                         ImageAlign.Default
                         );
 
-                    g.DrawString("This is a watermarked string", new TextFormat
+                    g.DrawString("DOCUMENT", new TextFormat
                     {
                         FontSize = 96,
                         ForeColor = Color.FromArgb(128, Color.Yellow),
