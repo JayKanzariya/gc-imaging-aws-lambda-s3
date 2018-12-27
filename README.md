@@ -88,48 +88,29 @@ using System.Drawing;
 using GrapeCity.Documents.Drawing;
 using GrapeCity.Documents.Text;
 using GrapeCity.Documents.Imaging;
+
 namespace GCImagingAWSLambdaS3
 {
     public class GcImagingOperations
     {
-       public static string GetGrayScale(Stream stream)
-       {
+        public static string GetConvertedImage(byte[] stream)
+        {
             using (var bmp = new GcBitmap())
             {
                 bmp.Load(stream);
-                bmp.ApplyEffect(GrayscaleEffect.Get(GrayscaleStandard.BT601));
-                return GetBase64(bmp);
-            }
-       }
-       public static string GetThumbnail(Stream stream)
-       {
-            using (var origBmp = new GcBitmap())
-            {
-                origBmp.Load(stream);
-                var bmp = origBmp.Resize(100, 100, InterpolationMode.NearestNeighbor);
-                return GetBase64(bmp);
-            }
-       }
-       public static string GetEnlarged(Stream stream)
-       {
-            using (var origBmp = new GcBitmap())
-            {
-                origBmp.Load(stream);
-                var bmp = origBmp.Resize(
-                    origBmp.PixelWidth * 2, 
-                    origBmp.PixelHeight * 2,
-                    InterpolationMode.NearestNeighbor);
-                return GetBase64(bmp);
-            }
-       }
-       public static string GetWaterMarked(Stream stream)
-       {
-         using (var bmp = new GcBitmap())
-         {
-                bmp.Load(stream);
+                // Add watermark
+                var newImg = new GcBitmap();
+                newImg.Load(stream);
                 using (var g = bmp.CreateGraphics(Color.White))
                 {
-                    g.DrawString("Watermark", new TextFormat
+                    g.DrawImage(
+                        Image.FromGcBitmap(newImg, true),
+                        new RectangleF(0, 0, bmp.Width, bmp.Height),
+                        null,
+                        ImageAlign.Default
+                        );
+
+                    g.DrawString("DOCUMENT", new TextFormat
                     {
                         FontSize = 96,
                         ForeColor = Color.FromArgb(128, Color.Yellow),
@@ -138,123 +119,136 @@ namespace GCImagingAWSLambdaS3
                     new RectangleF(0, 0, bmp.Width, bmp.Height),
                     TextAlignment.Center, ParagraphAlignment.Center, false);
                 }
-                return GetBase64(bmp);
-         }
-    }
-    public static string GetCustomImage(Stream stream)
-    {
-         using (var bmp = new GcBitmap())
-         {
-             bmp.Load(stream);
-             // Perform custom operations
-             using (var g = bmp.CreateGraphics(Color.White))
-             {
-               // draw a solid red border on the image
-               g.DrawRectangle(
-                  new RectangleF(0, 0, bmp.Width, bmp.Height),
-                  Color.Red,
-                  2,
-                  DashStyle.Solid);
-               // Add a yellow watermark at bottom right corner
-               var wmRect = g.MeasureString(
-                  "Created using GCImagingAWSLambdaS3 Lambda", 
-                  new TextFormat
-                  {
-                     FontSize = 18,
-                     ForeColor = Color.FromArgb(128, Color.Yellow),
-                     Font = FontCollection.SystemFonts.DefaultFont
-                  });
-               g.DrawString(
-                  "Created using GCImagingAWSLambdaS3 Lambda",
-                  new TextFormat
-                  {
-                     FontSize = 18,
-                     ForeColor = Color.FromArgb(128, Color.Yellow),
-                     Font = FontCollection.SystemFonts.DefaultFont
-                  },
-                  new RectangleF(
-                     bmp.Width - wmRect.Width,
-                     bmp.Height - wmRect.Height,
-                     wmRect.Width,
-                     wmRect.Height),
-                     TextAlignment.Center, 
-                     ParagraphAlignment.Center,
-                  false);
-             }
-             return GetBase64(bmp);
-         }
-     }
-     #region helper
-     private static string GetBase64(GcBitmap bmp)
-     {
-        using (Image image = Image.FromGcBitmap(bmp, true))
-        {
-           using (MemoryStream m = new MemoryStream())
-           {
-              bmp.SaveAsPng(m);
-              return Convert.ToBase64String(m.ToArray());
-           }
+                // Convert to grayscale
+                bmp.ApplyEffect(GrayscaleEffect.Get(GrayscaleStandard.BT601));
+                // Resize to thumbnail
+                var resizedImage = bmp.Resize(100, 100, InterpolationMode.NearestNeighbor);
+                return GetBase64(resizedImage);
+            }
         }
-     }
-     #endregion
- }
+
+        #region helper
+        private static string GetBase64(GcBitmap bmp)
+        {
+            using (MemoryStream m = new MemoryStream())
+            {
+                bmp.SaveAsPng(m);
+                return Convert.ToBase64String(m.ToArray());
+            }
+        }
+        #endregion
+    }
 }
 ```
 5.	Open Function class. Add the following code in its ‘FunctionHandler’ method:
 ```cs
-public async Task<string> FunctionHandler(S3Event evnt, ILambdaContext context)
-{
-    var s3Event = evnt.Records?[0].S3;
-    if(s3Event == null)
-    {
-        return null;
-    }
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web;
+using Amazon.Lambda.Core;
+using Amazon.Lambda.S3Events;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Amazon.S3.Util;
 
-    try
+// Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
+[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+
+namespace GCImagingAWSLambdaS3
+{
+    public class Function
     {
-        var rs = await this.S3Client.GetObjectMetadataAsync(
-            s3Event.Bucket.Name,
-            s3Event.Object.Key);
-                
-        if (rs.Headers.ContentType.StartsWith("image/"))
+        static readonly string SourceBucket = "gc-imaging-source-bucket";
+        static readonly string DestBucket = "gc-imaging-target-bucket";
+        IAmazonS3 S3Client { get; set; }
+
+        /// <summary>
+        /// Default constructor. This constructor is used by Lambda to construct the instance. When invoked in a Lambda environment
+        /// the AWS credentials will come from the IAM role associated with the function and the AWS region will be set to the
+        /// region the Lambda function is executed in.
+        /// </summary>
+        public Function()
         {
-            using (GetObjectResponse response = await S3Client.GetObjectAsync(
-                s3Event.Bucket.Name,
-                s3Event.Object.Key))
+            S3Client = new AmazonS3Client();
+        }
+
+        /// <summary>
+        /// Constructs an instance with a preconfigured S3 client. This can be used for testing the outside of the Lambda environment.
+        /// </summary>
+        /// <param name="s3Client"></param>
+        public Function(IAmazonS3 s3Client)
+        {
+            this.S3Client = s3Client;
+        }
+
+        /// <summary>
+        /// This method is called for every Lambda invocation. This method takes in an S3 event object and can be used 
+        /// to respond to S3 notifications.
+        /// </summary>
+        /// <param name="evnt"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public async Task<string> FunctionHandler(S3Event evnt, ILambdaContext context)
+        {
+            var s3Event = evnt.Records?[0].S3;
+            if (s3Event == null)
             {
-                using (Stream responseStream = response.ResponseStream)
+                return null;
+            }
+
+            try
+            {
+                var rs = await this.S3Client.GetObjectMetadataAsync(
+                    s3Event.Bucket.Name,
+                    s3Event.Object.Key);
+                if (rs.Headers.ContentType.StartsWith("image/"))
                 {
-                    using (StreamReader reader = new StreamReader(responseStream))
+                    using (GetObjectResponse response = await S3Client.GetObjectAsync(
+                        s3Event.Bucket.Name,
+                        s3Event.Object.Key))
                     {
-                        using (var memstream = new MemoryStream())
+                        using (Stream responseStream = response.ResponseStream)
                         {
-                            var buffer = new byte[512];
-                            var bytesRead = default(int);
-                            while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
-                                memstream.Write(buffer, 0, bytesRead);
-                        // Perform image manipulation
-                        // We are choosing to grayscale
-                            var transformedImage = GcImagingOperations.GetGrayScale(memstream);
-                            PutObjectRequest putRequest = new PutObjectRequest()
+                            using (StreamReader reader = new StreamReader(responseStream))
                             {
-                                BucketName = DestBucket,
-                                Key = $"grayscale-{s3Event.Object.Key}",
-                                ContentType = rs.Headers.ContentType,
-                                ContentBody = transformedImage
-                            };
-                            await S3Client.PutObjectAsync(putRequest);
+                                using (var memstream = new MemoryStream())
+                                {
+                                    var buffer = new byte[512];
+                                    var bytesRead = default(int);
+                                    while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
+                                        memstream.Write(buffer, 0, bytesRead);
+                                    
+                                    var transformedImage = GcImagingOperations.GetConvertedImage(memstream.ToArray());
+                                    PutObjectRequest putRequest = new PutObjectRequest()
+                                    {
+                                        BucketName = DestBucket,
+                                        Key = $"grayscale-{s3Event.Object.Key}",
+                                        ContentType = rs.Headers.ContentType,
+                                        ContentBody = transformedImage
+                                    };
+                                    await S3Client.PutObjectAsync(putRequest);
+                                }
+                            }
                         }
                     }
                 }
+                return rs.Headers.ContentType;
+            }
+            catch (Exception e)
+            {
+                context.Logger.LogLine($"Error getting object {s3Event.Object.Key} from bucket {s3Event.Bucket.Name}. Make sure they exist and your bucket is in the same region as this function.");
+                context.Logger.LogLine(e.Message);
+                context.Logger.LogLine(e.StackTrace);
+                throw;
             }
         }
-        return rs.Headers.ContentType;
-    }
-    catch (Exception e)
-    {
-        throw;
     }
 }
+
 ```
 6.	You can then publish your function to AWS directly by right-clicking on your project and then selecting ‘Publish to AWS Lambda’
 
