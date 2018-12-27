@@ -18,15 +18,7 @@ Install-Package GrapeCity.Documents.Imaging
 dotnet add package GrapeCity.Documents.Imaging
 ```
 
-GcImaging does not depend on any specific hardware or any third-party libraries. Usage of GcImaging revolves around GcBitmap class, which can be created directly (new GcBitmap()). The functionalities of this class are:
-
-1.	Creating a new image
-2.	Loading an existing Image
-3.	Saving an image
-4.	Changing image size, resolution, format
-5.	Bitmap specific operations such as BitBit and resizing with various interpolation modes.
-6.	Creating an instance of GcBitmapGraphics, that allows drawing.
-7.	License checking.
+GcImaging does not depend on any specific hardware or any third-party libraries. Usage of GcImaging revolves around GcBitmap class, which can be created directly (new GcBitmap()).
 
 We are designing a service which will perform manipulations on the image. Following are some of the manipulation we have decided to walk-through in this article.
 
@@ -37,6 +29,10 @@ We are designing a service which will perform manipulations on the image. Follow
 |Watermark|```var _gcBitmap = new GcBitmap();```<br>```_gcBitmap.Load(imageStream);```<br>```using (var g = bmp.CreateGraphics(Color.White))```<br>```{```<br>```     g.DrawString(```<br>```         "Watermark",```<br>```         new TextFormat```<br>```         {```<br>```             FontSize = 96,```<br>```             ForeColor = Color.FromArgb(128, Color.Yellow),```<br>```             Font = FontCollection.SystemFonts.DefaultFont```<br>```         },```<br>```         new RectangleF(0, 0, gcBitmap.Width, gcBitmap.Height),```<br>```         TextAlignment.Center,```<br>```         ParagraphAlignment.Center,```<br>```         false```<br>```     );```<br>```}```|We use GcBitmapGraphics class to draw watermark on an image. An instance of GcBitmapGraphics can be created on a GcBitmap using the method GcBitmap.CreateGraphics(). GcBitmapGraphics derives from GcGraphics and provides drawing, filling, clipping and other normal graphics operations, like GcPdfGraphics. Text can be drawn on a GcBitmapGraphics using the same methods as in GcPdf - e.g. DrawTextLayout.|
 
 [For more imaging operations refer this](https://demos.componentone.com/gcdocs/gcimaging/).
+
+|Before|After|
+|---|---|
+|![](gc-imaging-aws-lambda-s3/DocumentsIconBefore.png)|![](gc-imaging-aws-lambda-s3/DocumentsIconAfter.png)|
 
 ### Amazon S3
 
