@@ -1,4 +1,4 @@
-# Create an Imaging service over AWS S3 with GrapeCity Documents for Imaging
+# [Create an Imaging service over AWS S3 with GrapeCity Documents for Imaging](https://www.grapecity.com/en/blogs/create-a-thumbnail-image-using-documents-for-imaging)
 
 ![Create your Imaging service on AWS with GcImaging](Blog_%20Create%20your%20Imaging%20service%20on%20AWS%20with%20GcImaging.png)
 
